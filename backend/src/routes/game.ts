@@ -2,6 +2,7 @@ import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authenticate, AuthRequest } from "../middlewares/auth";
+import { error } from "console";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -15,13 +16,13 @@ const gameSchema = z.object({
 
 router.use(authenticate);
 
-router.post("/", async (req, res) => {
-    const userId = (req as any).userId;
-    const { title, platform, status, sourceUrl } = req.body;
-
-    if (!title || !platform || !status) {
-        return res.status(400).json({error: "Missing required fields."});
+router.post("/", async (req:AuthRequest, res) => {
+    const parse = gameSchema.safeParse(req.body);
+    if (!parse.success) {
+        return res.status(400).json({error: parse.error.flatten().fieldErrors});
     }
+
+    const { title, platform, status, sourceUrl } = req.body;
 
     const game = await prisma.game.create({
         data: {
@@ -29,51 +30,51 @@ router.post("/", async (req, res) => {
             platform,
             status,
             sourceUrl,
-            userId,
+            userId: req.user.userId,
         },
     });
 })
 
-router.get("/", async (req, res) => {
-    const userId = (req as any).userId;
+router.get("/", async (req: AuthRequest, res) => {
     const games = await prisma.game.findMany({
-        where: {userId},
+        where: {userId: req.user.userId},
         orderBy: {createdAt: "desc"},
     });
     res.json(games);
 });
 
-router.put("/:id", async (req, res) => {
-    const userId = (req as any).userId;
+router.put("/:id", async (req: AuthRequest, res) => {
     const gameId = parseInt(req.params.id);
-    const { title, platform, status, sourceUrl } = req.body;
+    const parse = gameSchema.safeParse(req.body);
 
-    try {
-        const updated = await prisma.game.updateMany({
-            where: {id: gameId, userId},
-            data: {title, platform, status, sourceUrl},
-        });
-
-        if (updated.count === 0) return res.status(404).json({error: "Game not found."});
-    } catch {
-        res.status(400).json({error: "Invalid data or game ID."});
+    if (!parse.success) {
+       return res.status(400).json({error: parse.error.flatten().fieldErrors});
     }
+
+    const updated = await prisma.game.updateMany({
+        where: {id: gameId, userId: req.user.userId},
+        data: parse.data,
+    });
+
+    if (updated.count === 0) {
+        return res.json({error: "Game not found or not owned by user."});
+    }
+
+    res.json({message: "Game updated successfully."});
 });
 
-router.delete("/:id", async (req, res) => {
-    const userId = (req as any).userId;
+router.delete("/:id", async (req: AuthRequest, res) => {
     const gameId = parseInt(req.params.id);
 
-    try {
-        const deleted = await prisma.game.deleteMany({
-            where: {id: gameId, userId},
-        });
+    const deleted = await prisma.game.deleteMany({
+        where: {id: gameId, userId: req.user.userId},
+    });
 
-        if (deleted.count === 0) return res.status(404).json({error: "Game not found."});
-        res.json({message: "Game deleted successfully."});
-    } catch {
-        res.status(400).json({error: "Invalid game ID."});
+    if (deleted.count === 0) {
+        return res.status(404).json({error: "Game not found or not owned by user."});
     }
+
+    res.json({message: "Game deleted successfully."});
 });
 
 export default router;
