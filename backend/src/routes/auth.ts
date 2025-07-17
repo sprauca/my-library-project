@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from 'zod';
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
-import {verifyToken, AuthRequest} from '../middleware/verifToken';
+import {verifyToken, AuthRequest} from '../middlewares/verifToken';
 
 dotenv.config();
 
