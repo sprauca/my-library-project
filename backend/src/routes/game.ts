@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import { number, z } from "zod";
-import { verify } from "jsonwebtoken";
-import { error } from "console";
+import { z } from "zod";
+import { authenticate, AuthRequest } from "../middlewares/auth";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -14,27 +13,7 @@ const gameSchema = z.object({
     sourceUrl: z.string().url().optional(),
 });
 
-router.use((req, res, next) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(" ")[1];
-
-    if (!token) return res.status(401).json({ error: "Access denied. No token provided." });
-
-    try {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) {
-            return res.status(500).json({error: "JWT secret is not defined."});
-        }
-        const decoded = verify(token, secret);
-        if (typeof decoded !== "object" || !("userId" in decoded)) {
-            return res.status(401).json({ error: "Invalid token." });
-        }
-        (req as any).userId = (decoded as {userId: number}).userId;
-        next(); 
-    } catch {
-        res.status(401).json({ error: "Invalid token." });
-    }
-});
+router.use(authenticate);
 
 router.post("/", async (req, res) => {
     const userId = (req as any).userId;
