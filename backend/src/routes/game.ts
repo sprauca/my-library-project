@@ -2,7 +2,6 @@ import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { authenticate, AuthRequest } from "../middlewares/auth";
-import { error } from "console";
 
 const router = Router();
 const prisma = new PrismaClient();
