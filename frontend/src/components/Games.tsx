@@ -87,8 +87,6 @@ const Games = () => {
                 <select value={status} onChange={(e) => setStatus(e.target.value)}>
                     <option value="installed">Installed</option>
                     <option value="not installed">Not Installed</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
                 </select>
                 <input
                     type="url"
