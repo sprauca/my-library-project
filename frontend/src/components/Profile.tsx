@@ -1,7 +1,6 @@
 import {useEffect, useState} from "react";
 import axios from "axios";
 import styles from "./Profile.module.css";
-import Games from "./Games";
 
 type User = {
     id: number;
@@ -55,11 +54,6 @@ const Profile = () => {
             <p className={styles.info}><strong>Email :</strong> {user.email}</p>
             <p className={styles.info}><strong>Username :</strong> {user.username || "N/A"}</p>
             <p className={styles.info}><strong>Member since :</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
-
-            <section className={styles.gamesSection}>
-                <h3 className={styles.sectionTitle}>🎮 My Games</h3>
-                <Games />
-            </section>
 
             <button onClick={handleLogout} className={styles.button}>
                 Logout
