@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { keycloakAuth } from "../middlewares/keycloakAuth";
+import { keycloakAuth } from "../middlewares/keycloak";
 import { Request } from "express";
 
 const router = Router();

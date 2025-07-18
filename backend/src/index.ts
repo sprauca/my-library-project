@@ -1,45 +1,27 @@
 import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
 import session from 'express-session';
-import Keycloak from 'keycloak-connect';
-
-import userRoutes from './routes/user';
-import authRoutes from './routes/auth';
+import {keycloak, memoryStore} from './middlewares/keycloak';
 import gameRoutes from './routes/game';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
 
-const memoryStore = new session.MemoryStore();
-
-app.use(session({
-    secret: 'secret sauce',
-    resave: false,
-    saveUninitialized: false,
-    store: memoryStore
-}));
-
-const keycloak = new Keycloak(
-    {store: memoryStore},
-    {
-        realm: process.env.KEYCLOAK_REALM || 'my-library-project',
-        'auth-server-url': process.env.KEYCLOAK_URL || 'http://localhost:8080/auth',
-        'ssl-required': 'external',
-        resource: process.env.KEYCLOAK_CLIENT_ID || 'backend',
-        'confidential-port': 0
-    }
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "change-this-secret",
+        resave: false,
+        saveUninitialized: true,
+        store: memoryStore,
+    })
 );
 
-app.use(cors());
-app.use(express.json());
 app.use(keycloak.middleware());
 
-app.use('/games', keycloak.protect(), gameRoutes);
+app.use(express.json());
 
-app.use('/users', userRoutes);
-app.use('/auth', authRoutes);
+app.use('/games', keycloak.protect(), gameRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Welcome to the API backend!');
