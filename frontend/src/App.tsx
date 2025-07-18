@@ -1,51 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Login from "./components/Login";
-import Profile from "./components/Profile";
 import Register from "./components/Register";
+import Dashboard from "./components/Dashboard";
 
 function App() {
+    const token = localStorage.getItem("token");
     const [view, setView] = useState<"login" | "register">("login");
-    const [token, setToken] = useState<string | null>(null);
 
-    useEffect(() => {
-        const stored = localStorage.getItem("token");
-        setToken(stored);
-    }, []);
-
-    if (token) return <Profile />;
+    if (token) return <Dashboard />;
 
     return (
         <div>
             {view === "login" ? (
                 <>
-                    <Login onLogin={(token) => {
-                        localStorage.setItem("token", token);
-                        setToken(token);
-                    }}/>
+                    <Login onLogin={() => window.location.reload()} />
                     <p style={{textAlign: "center", marginTop: "1rem"}}>
                         Don't have an account ?{" "}
-                        <button 
-                            onClick={() => setView("register")}
-                            style={{color: "#2563EB", background: "none", border: "none", fontSize: "1rem", cursor: "pointer"}}
-                        >
-                            Register
-                        </button>
+                        <button onClick={() => setView("register")}>Register</button>
                     </p>
                 </>
             ) : (
                 <>
-                    <Register onRegister={(token) => {
-                        localStorage.setItem("token", token);
-                        setToken(token);
-                    }}/>
+                    <Register onRegister={() => window.location.reload()}/>
                     <p style={{textAlign: "center", marginTop: "1rem"}}>
                         Already have an account ?{" "}
-                        <button
-                            onClick={() => setView("login")}
-                            style={{color: "#2563EB", background: "none", border: "none", fontSize: "1rem", cursor: "pointer"}}
-                        >
-                            Login
-                        </button>
+                        <button onClick={() => setView("login")}>Login</button>
                     </p>
                 </>
             )}
