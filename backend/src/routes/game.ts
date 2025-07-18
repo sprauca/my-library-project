@@ -2,6 +2,7 @@ import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { keycloak } from "../middlewares/keycloak";
+import { Request } from "express";
 
 const router = Router();
 const prisma = new PrismaClient();
