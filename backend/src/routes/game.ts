@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { keycloak } from "../middlewares/keycloak";
-import { ensureUser } from "../middlewares/ensureUser";
+import keycloak from "../middlewares/keycloak";
+import ensureUser from "../middlewares/ensureUser";
 import { Request } from "express";
 
 const router = Router();
