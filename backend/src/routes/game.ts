@@ -2,6 +2,7 @@ import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { keycloak } from "../middlewares/keycloak";
+import { ensureUser } from "../middlewares/ensureUser";
 import { Request } from "express";
 
 const router = Router();
@@ -14,7 +15,7 @@ const gameSchema = z.object({
     sourceUrl: z.string().url().optional(),
 });
 
-router.use(keycloak.protect());
+router.use(keycloak.protect(), ensureUser());
 
 router.post("/", async (req: Request, res) => {
     const parse = gameSchema.safeParse(req.body);
@@ -23,7 +24,7 @@ router.post("/", async (req: Request, res) => {
     }
 
     const { title, platform, status, sourceUrl } = req.body;
-    const keycloakId = (req as any).auth?.sub;
+    const keycloakId = (req as any).userId;
 
     try {
         const game = await prisma.game.create({
@@ -32,7 +33,7 @@ router.post("/", async (req: Request, res) => {
                 platform,
                 status,
                 sourceUrl,
-                userId: keycloakId,
+                userId: (req as any).userId,
             },
         });
         res.status(201).json(game);
@@ -42,7 +43,7 @@ router.post("/", async (req: Request, res) => {
 });
 
 router.get("/", async (req: Request, res) => {
-    const keycloakId = (req as any).auth?.sub;
+    const keycloakId = (req as any).userId;
 
     const games = await prisma.game.findMany({
         where: {userId: keycloakId},
@@ -53,7 +54,7 @@ router.get("/", async (req: Request, res) => {
 });
 
 router.put("/:id", async (req: Request, res) => {
-    const keycloakId = (req as any).auth?.sub;
+    const keycloakId = (req as any).userId;
     const gameId = parseInt(req.params.id);
 
     const parsed = gameSchema.safeParse(req.body);
@@ -74,7 +75,7 @@ router.put("/:id", async (req: Request, res) => {
 });
 
 router.delete("/:id", async (req: Request, res) => {
-    const keycloakId = (req as any).auth?.sub;
+    const keycloakId = (req as any).userId;
     const gameId = parseInt(req.params.id);
 
     const deleted = await prisma.game.deleteMany({
