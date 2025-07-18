@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { keycloakAuth } from "../middlewares/keycloak";
-import { Request } from "express";
+import { keycloak } from "../middlewares/keycloak";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -14,7 +13,7 @@ const gameSchema = z.object({
     sourceUrl: z.string().url().optional(),
 });
 
-router.use(keycloakAuth);
+router.use(keycloak.protect());
 
 router.post("/", async (req: Request, res) => {
     const parse = gameSchema.safeParse(req.body);

@@ -8,10 +8,13 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  username  String?
-  createdAt DateTime  @default(now())
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  username    String?
+  password    String
+  createdAt   DateTime  @default(now())
+  keycloakId  String?   @unique
+  games       Game[]
 }
 
 model Game {
@@ -20,6 +23,7 @@ model Game {
   platform  String
   status    String
   sourceUrl String?
-  userId    String
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
   createdAt DateTime  @default(now())
 }
