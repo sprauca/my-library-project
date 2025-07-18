@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { authenticate, AuthRequest } from "../middlewares/auth";
+import { keycloakAuth } from "../middlewares/keycloakAuth";
+import { Request } from "express";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -13,60 +14,71 @@ const gameSchema = z.object({
     sourceUrl: z.string().url().optional(),
 });
 
-router.use(authenticate);
+router.use(keycloakAuth);
 
-router.post("/", async (req:AuthRequest, res) => {
+router.post("/", async (req: Request, res) => {
     const parse = gameSchema.safeParse(req.body);
     if (!parse.success) {
         return res.status(400).json({error: parse.error.flatten().fieldErrors});
     }
 
     const { title, platform, status, sourceUrl } = req.body;
+    const keycloakId = (req as any).auth?.sub;
 
-    const game = await prisma.game.create({
-        data: {
-            title,
-            platform,
-            status,
-            sourceUrl,
-            userId: req.user.userId,
-        },
-    });
-})
+    try {
+        const game = await prisma.game.create({
+            data: {
+                title,
+                platform,
+                status,
+                sourceUrl,
+                userId: keycloakId,
+            },
+        });
+        res.status(201).json(game);
+    } catch (e) {
+        res.status(500).json({error: "Failed to create game."});
+    }
+});
 
-router.get("/", async (req: AuthRequest, res) => {
+router.get("/", async (req: Request, res) => {
+    const keycloakId = (req as any).auth?.sub;
+
     const games = await prisma.game.findMany({
-        where: {userId: req.user.userId},
+        where: {userId: keycloakId},
         orderBy: {createdAt: "desc"},
     });
+
     res.json(games);
 });
 
-router.put("/:id", async (req: AuthRequest, res) => {
+router.put("/:id", async (req: Request, res) => {
+    const keycloakId = (req as any).auth?.sub;
     const gameId = parseInt(req.params.id);
-    const parse = gameSchema.safeParse(req.body);
 
-    if (!parse.success) {
-       return res.status(400).json({error: parse.error.flatten().fieldErrors});
+    const parsed = gameSchema.safeParse(req.body);
+    if (!parsed.success) {
+       return res.status(400).json({error: parsed.error.flatten().fieldErrors});
     }
 
     const updated = await prisma.game.updateMany({
-        where: {id: gameId, userId: req.user.userId},
-        data: parse.data,
+        where: {id: gameId, userId: keycloakId},
+        data: parsed.data,
     });
 
     if (updated.count === 0) {
-        return res.json({error: "Game not found or not owned by user."});
+        return res.status(404).json({error: "Game not found or not owned by user."});
     }
 
     res.json({message: "Game updated successfully."});
 });
 
-router.delete("/:id", async (req: AuthRequest, res) => {
+router.delete("/:id", async (req: Request, res) => {
+    const keycloakId = (req as any).auth?.sub;
     const gameId = parseInt(req.params.id);
 
     const deleted = await prisma.game.deleteMany({
-        where: {id: gameId, userId: req.user.userId},
+        where: {id: gameId, userId: keycloakId},
     });
 
     if (deleted.count === 0) {
