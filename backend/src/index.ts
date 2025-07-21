@@ -1,8 +1,10 @@
 import express from 'express';
 import session from 'express-session';
 import {keycloak, memoryStore} from './middlewares/keycloak';
-import gameRoutes from './routes/game';
 import dotenv from 'dotenv';
+
+import gameRoutes from './routes/game';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -21,7 +23,8 @@ app.use(keycloak.middleware());
 
 app.use(express.json());
 
-app.use('/games', keycloak.protect(), gameRoutes);
+app.use('/games', gameRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Welcome to the API backend!');
