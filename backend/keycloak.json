@@ -1,6 +1,6 @@
 {
   "realm": "my-library-project",
-  "auth-server-url": "http://127.0.0.1:8080/",
+  "auth-server-url": "http://localhost:8080/",
   "ssl-required": "external",
   "resource": "frontend",
   "public-client": true,
