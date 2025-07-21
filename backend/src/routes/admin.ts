@@ -3,32 +3,35 @@ import { PrismaClient } from "@prisma/client";
 import { keycloak } from "../middlewares/keycloak";
 import { requireAdmin } from "../middlewares/roles";
 
-const router = Router();
 const prisma = new PrismaClient();
+const router = Router();
 
-router.use(keycloak.protect(), requireAdmin);
+router.use(keycloak.protect("realm:admin"));
 
-router.get("/users", async (_req: Request, res: Response) => {
-    const users = await prisma.user.findMany({
+router.get("/", requireAdmin, async (_req: Request, res: Response) => {
+    try {
+        const users = await prisma.user.findMany({
         select: {
             id: true,
             email: true,
             username: true,
             createdAt: true,
-            keycloakId: true,
-        },
-        orderBy: {createdAt: "desc"},
-    });
-    res.json(users);
-});
+            },
+        });
 
-router.get("/stats", async (_req: Request, res: Response) => {
-    const userCount = await prisma.user.count();
-    const gameCount = await prisma.game.count();
-    res.json({
-        totalUsers: userCount, 
-        totalGames: gameCount
-    });
+        const userCount = users.length;
+        const gameCount = await prisma.game.count();
+        res.json({
+            stats: {
+                totalUsers: userCount,
+                totalGames: gameCount,
+            },
+            users,
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Server error fetching admin data." });
+    }
 });
 
 export default router;
