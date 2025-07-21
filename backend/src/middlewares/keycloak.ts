@@ -1,6 +1,7 @@
-import session from "express-session";
 import Keycloak from "keycloak-connect";
+import session from "express-session";
 import { Express } from "express";
+
 
 const memoryStore = new session.MemoryStore();
 
