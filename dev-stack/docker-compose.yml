@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+    postgres:
+        image: postgres:15
+        container_name: pg_keycloak
+        restart: always
+        environment:
+            POSTGRES_DB: ${PG_DB}
+            POSTGRES_USER: ${PG_USER}
+            POSTGRES_PASSWORD: ${PG_PASSWORD}
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    keycloak:
+        image: quay.io/keycloak/keycloak:24.0.2
+        container_name: keycloak
+        command: start --optimized
+        restart: always
+        environment:
+            KC_DB: postgres
+            KC_DB_URL: jdbc:postgresql://postgres:5432/${PG_DB}
+            KC_DB_USERNAME: ${PG_USER}
+            KC_DB_PASSWORD: ${PG_PASSWORD}
+            KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+            KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+        ports:
+            - "8080:8080"
+        depends_on:
+            - postgres
+
+    tabby:
+        image: tabbyml/tabby
+        container_name: tabby
+        ports:
+            - "5000:5000"
+        volumes:
+            - tabby_models:app/data
+        environment:
+            - MODEL_NAME=TabbyML/StarCoder
+            - DEVICE=cuda
+
+volumes:
+    pgdata:
+    tabby_models:
