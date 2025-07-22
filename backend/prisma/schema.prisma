@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id          Int     @id @default(autoincrement())
+  keycloakId  String  @unique
+  email       String
+  games       Game[]
+}
+
 model Game {
   id        Int      @id @default(autoincrement())
   title     String
@@ -14,5 +21,6 @@ model Game {
   status    String
   sourceUrl String?
   userId    String
+  user      User     @relation(fields: [userId], references: [keycloakId])
   createdAt DateTime @default(now())
 }
