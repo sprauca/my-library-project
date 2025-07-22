@@ -13,9 +13,9 @@ services:
             - "5432:5432"
 
     keycloak:
-        image: quay.io/keycloak/keycloak:24.0.2
+        image: quay.io/keycloak/keycloak:latest
         container_name: keycloak
-        command: start --optimized
+        command: start-dev
         restart: always
         environment:
             KC_DB: postgres
@@ -32,10 +32,11 @@ services:
     tabby:
         image: tabbyml/tabby
         container_name: tabby
+        command: serve
         ports:
             - "5000:5000"
         volumes:
-            - tabby_models:app/data
+            - tabby_models:/app/data
         environment:
             - MODEL_NAME=TabbyML/StarCoder
             - DEVICE=cuda
