@@ -30,6 +30,9 @@ const Header = () => {
                             <ChakraLink as={Link} to="/games">
                                 My Games
                             </ChakraLink>
+                            <ChakraLink as={Link} to="/profile">
+                                Profile
+                            </ChakraLink>
                             {isAdmin && (
                                 <ChakraLink as={Link} to="/admin">
                                     Admin

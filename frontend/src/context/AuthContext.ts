@@ -1,8 +1,8 @@
 import {createContext} from "react";
-import type {KeycloakInstance} from "keycloak-js";
+import type Keycloak from "keycloak-js";
 
 type AuthContextType = {
-  keycloak: KeycloakInstance;
+  keycloak: Keycloak;
   initialized: boolean;
   authenticated: boolean;
 };

@@ -6,6 +6,7 @@ import Header from './components/Haeder';
 import Home from './pages/Home';
 import Games from './pages/Games';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 const App = () => {
@@ -25,6 +26,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Games />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/profile'
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
