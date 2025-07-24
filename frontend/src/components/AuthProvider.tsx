@@ -2,11 +2,16 @@ import { useEffect, useState, type ReactNode } from "react";
 import keycloak from "../lib/keycloak";
 import AuthContext from "../context/AuthContext";
 
+let keycloakInitialized = false;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [initialized, setInitialized] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
+        if (keycloakInitialized) return;
+        keycloakInitialized = true;
+
         keycloak
             .init({
                 onLoad: "check-sso",
